@@ -26,31 +26,37 @@ print(__doc__)
 def read_data_table(inf):
     inputfile = inf
 
-    datamatrix = np.array([map(float,line.split()[1:]) for line in open(inputfile).readlines()])
+    datamatrix = np.array([map(float,line.split()[1:]) 
+                            for line in open(inputfile).readlines()])
 
-    # Scaling the value in to range [0,1]
-    min_max_scaler = preprocessing.MinMaxScaler()
-    data_scaled = min_max_scaler.fit_transform(datamatrix)
+ 
+    label = np.array(map(int,[line.split()[0] 
+                        for line in open(inputfile).readlines()]))
 
-    label = np.array(map(int,[line.split()[0] for line in open(inputfile).readlines()]))
-
-    dataform = {"data":data_scaled,"label":label}
+    dataform = {"data":datamatrix,"label":label}
 
     return(dataform)
 
 if __name__=="__main__":
 
     # The selected 4 best biomarker candidates
-    markers = [45,63,68,77]
+    markers = [45, 68, 77, 63]
 
     # Loading the traning data set  from file
     top100 = read_data_table("top100.txt")
     # Loading the external test data set from file
-    jorth100 = read_data_table("jo_bwa_19seed_top100.txt")
+    jorth100 = read_data_table("Jo_bwa_new_top100.txt")
 
     X,y = top100["data"][:,markers],top100["label"]
-    X_train, X_test, y_train, y_test = X,X,y,y
-    Jx_test,Jy_test = jorth100["data"][:,markers],jorth100["label"]
+    Jx,Jy = jorth100["data"][:,markers],jorth100["label"]
+    
+    # Scaling the value in to range [0,1]
+    min_max_scaler = preprocessing.MinMaxScaler()
+    X_train = min_max_scaler.fit_transform(X)
+    X_test = X_train
+    Jx_test = min_max_scaler.fit_transform(Jx)
+    y_train, y_test = y, y
+    Jy_test = Jy
 
     # Grid search for best parameters
     tuned_parameters = [
